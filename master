@@ -1,4 +1,3 @@
-# 1. 在这里加上 LED 类
 from controller import Robot, DistanceSensor, Motor, PositionSensor, Accelerometer, Camera, LED
 
 # --- constants (same as C version) ---
@@ -6,8 +5,10 @@ WHEEL_RADIUS = 0.02
 AXLE_LENGTH = 0.052
 RANGE = 1024 / 2  # 512
 
+# [DIFF 1] Matrix Modified: Values changed from small floats (e.g., 0.942) to large integers (e.g., 150)
+# This makes the robot react more aggressively and run faster.
 BRAITENBERG = [
-    [150, -35], # 修改：调大了系数，让它跑得更有活力一点
+    [150, -35], 
     [100, -15],
     [80,  -10],
     [-10, -10],
@@ -18,12 +19,12 @@ BRAITENBERG = [
 ]
 
 def compute_odometry(left_ps: PositionSensor, right_ps: PositionSensor):
-    l = left_ps.getValue()   # wheel angle (rad)
+    l = left_ps.getValue()    # wheel angle (rad)
     r = right_ps.getValue()
-    dl = l * WHEEL_RADIUS    # meters
+    dl = l * WHEEL_RADIUS     # meters
     dr = r * WHEEL_RADIUS
     da = (dr - dl) / AXLE_LENGTH
-    # 为了防止刷屏太快，这里我先注释掉打印，你需要可以解开
+    # Commented out to prevent console flooding; uncomment if needed
     # print(f"estimated distance covered by left wheel: {dl:g} m.")
     # print(f"estimated distance covered by right wheel: {dr:g} m.")
     # print(f"estimated change of orientation: {da:g} rad.")
@@ -41,7 +42,9 @@ if model == "GCtronic e-puck2":
     CAMERA_TIME_STEP = 64
 else:
     print("e-puck robot")
-    TIME_STEP = 64  # 修改：建议改成64，反应更灵敏
+    # [DIFF 2] TimeStep Modified: Changed from 256 to 64
+    # This makes the control loop run 4x faster for better responsiveness.
+    TIME_STEP = 64  
     CAMERA_TIME_STEP = 1024
 
 # --- 2) camera + accelerometer (enabled like C) ---
@@ -74,34 +77,28 @@ for name in ps_names:
     ps.append(s)
 
 # ==========================================
-# --- NEW: Turn on LEDs (变成发光诱饵) ---
+# --- [DIFF 3] NEW SECTION: Turn on LEDs ---
 # ==========================================
-# e-puck通常有10个LED。led0-7是圆环，led8是身体，led9是前灯
+# This entire block is new. It turns on all LEDs to make the robot visible to the Mad Dog.
 led_devices = []
-# 尝试打开所有可能的灯
 for i in range(10):
     try:
         led_name = f"led{i}"
         led = robot.getDevice(led_name)
-        led.set(1) # 1 代表点亮
+        led.set(1) # 1 means on
         led_devices.append(led)
     except:
-        pass # 如果某些型号没有这么多灯，就跳过
-print("诱饵模式已启动：所有 LED 已点亮！")
+        pass 
+print("Bait Mode Activated: All LEDs are switched ON!")
 # ==========================================
 
 # (optional) if you want to limit motor speeds safely:
-# e-puck wheels often allow about 6.28 rad/s (depends on robot)
 MAX_SPEED = 6.28
 
 # --- 6) main loop ---
 while robot.step(TIME_STEP) != -1:
     # read distance sensors
     sensors_value = [s.getValue() for s in ps]
-
-    # accelerometer print (same style as C)
-    # a = accelerometer.getValues()
-    # print(f"accelerometer values = {a[0]:0.2f} {a[1]:0.2f} {a[2]:0.2f}")
 
     # odometry print (same as C)
     compute_odometry(left_wheel_ps, right_wheel_ps)
@@ -110,19 +107,15 @@ while robot.step(TIME_STEP) != -1:
     speed_left = 0.0
     speed_right = 0.0
     
-    # 注意：Braitenberg 矩阵通常是用于避障的
-    # 如果你想让它到处乱跑，保持原样即可。
-    # 这里我保留你原来的逻辑
     for j in range(8):
         stim = 1.0 - (sensors_value[j] / RANGE)
-        # 如果 stim 很大(没障碍)，它会按照矩阵数值跑
-        # 如果 stim 很小(有障碍)，它会减速或转向
         speed_left  += BRAITENBERG[j][0] * stim
         speed_right += BRAITENBERG[j][1] * stim
 
-    # clamp (C did not clamp, but this prevents exceeding motor limits)
-    # 我加了个系数 0.1，因为上面的矩阵值很大，如果不缩小，会被 clamp 截断成直线运动
-    # 这样可以让它保留转向的特性
+    # clamp 
+    # [DIFF 4] Speed Scaling: Added (* 0.1) coefficient
+    # Because we increased the Matrix values significantly, we scale them down here
+    # to maintain steering ratios while hitting max speed.
     speed_left = clamp(speed_left * 0.1, -MAX_SPEED, MAX_SPEED)
     speed_right = clamp(speed_right * 0.1, -MAX_SPEED, MAX_SPEED)
 
