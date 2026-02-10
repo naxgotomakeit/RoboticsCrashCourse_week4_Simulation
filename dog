@@ -1,0 +1,127 @@
+from controller import Robot
+
+# ==========================================
+# --- 1. Initialization ---
+# ==========================================
+robot = Robot()
+timestep = int(robot.getBasicTimeStep())
+
+left_motor = robot.getDevice('left wheel motor')
+right_motor = robot.getDevice('right wheel motor')
+left_motor.setPosition(float('inf'))
+right_motor.setPosition(float('inf'))
+left_motor.setVelocity(0.0)
+right_motor.setVelocity(0.0)
+
+# Initialize 8 Light Sensors (For chasing light)
+ls = []
+for i in range(8):
+    sensor = robot.getDevice(f'ls{i}')
+    sensor.enable(timestep)
+    ls.append(sensor)
+
+# Initialize 8 Distance Sensors (For obstacle avoidance)
+ps = []
+for i in range(8):
+    sensor = robot.getDevice(f'ps{i}')
+    sensor.enable(timestep)
+    ps.append(sensor)
+
+# ==========================================
+# --- 2. Parameters Setup ---
+# ==========================================
+HARDWARE_LIMIT = left_motor.getMaxVelocity()
+MAX_SPEED = HARDWARE_LIMIT 
+
+# Threshold Configuration
+HUNTING_THRESHOLD = 3900      # Start chasing if light is seen (4000 is dark, 0 is bright)
+CRASH_THRESHOLD = 200.0       # Threshold for a hard crash -> Trigger reverse
+AVOID_THRESHOLD = 80.0        # Threshold for approaching walls -> Correct direction (Core avoidance)
+
+print(f"Smart Mad Dog Started | Max Speed: {MAX_SPEED}")
+
+def clamp(value, limit):
+    if value > limit: return limit
+    if value < -limit: return -limit
+    return value
+
+# ==========================================
+# --- 3. Main Loop ---
+# ==========================================
+reverse_counter = 0
+
+while robot.step(timestep) != -1:
+    
+    # --- A. Read Sensors ---
+    ls_val = [s.getValue() for s in ls]
+    ps_val = [s.getValue() for s in ps]
+    
+    min_light = min(ls_val) # Get the brightest light value
+    
+    # Find the maximum distance value (closest obstacle) to detect crashes
+    # ps0 and ps7 are located at the front
+    front_dist = max(ps_val[0], ps_val[7], ps_val[1], ps_val[6])
+    
+    # --- B. Compute Avoidance Repulsion Force ---
+    # Calculate obstacle pressure on left and right sides
+    # Left obstacles (ps5,6,7) -> Should turn Right
+    # Right obstacles (ps0,1,2) -> Should turn Left
+    left_obstacle = ps_val[5] + ps_val[6] + ps_val[7]
+    right_obstacle = ps_val[0] + ps_val[1] + ps_val[2]
+    
+    # Avoidance steering: If left obstacle is large, diff > 0, steer right
+    avoid_steer = (left_obstacle - right_obstacle) * 0.005
+
+    # --- C. Compute Chasing Attraction Force ---
+    left_light = ls_val[5] + ls_val[6] + ls_val[7]
+    right_light = ls_val[0] + ls_val[1] + ls_val[2]
+    
+    # Chasing steering: If left is bright (value is small), diff < 0, steer left
+    # Note: Light sensor values are smaller when brighter, so logic is inverted compared to distance sensors
+    light_steer = (left_light - right_light) * 0.002
+    
+    # --- D. State Machine Decision ---
+    
+    left_cmd = 0
+    right_cmd = 0
+    
+    # [Priority 1]: Hard Crash -> Force Reverse
+    if reverse_counter > 0:
+        reverse_counter -= 1
+        # Increase turning while reversing for a quick U-turn
+        left_cmd = -MAX_SPEED
+        right_cmd = -MAX_SPEED * 0.5
+        
+    elif front_dist > CRASH_THRESHOLD:
+        # print(">>> Crash detected! Reversing!")
+        reverse_counter = 10 # Reverse for roughly 0.3 seconds
+        left_cmd = -MAX_SPEED
+        right_cmd = -MAX_SPEED * 0.5
+        
+    # [Priority 2]: Approaching Walls -> Fusion Avoidance
+    # Run if wall is detected (value > 80) OR light is seen
+    # This is a "Weighted Fusion" algorithm
+    else:
+        # Base speed: Full speed
+        base_speed = MAX_SPEED 
+        
+        # Final Steering = Chasing Intent + Avoidance Intent
+        # If a wall is very close, avoid_steer becomes large and overrides light_steer
+        
+        # Only enable chasing steering if light is actually seen, otherwise just avoid obstacles
+        final_steer = avoid_steer
+        if min_light < HUNTING_THRESHOLD:
+             # Add chasing steering component (Pay attention to sign)
+             # Left side bright (small value) -> light_diff negative -> We want left wheel slow, right wheel fast -> turn should be negative
+             # Simple proportional control:
+             light_diff = (left_light - right_light)
+             final_steer += light_diff * 0.003
+        
+        # Apply Control
+        # Avoidance has priority: If there's a wall, avoid_steer dominates, forcing the robot away
+        left_cmd = base_speed + final_steer
+        right_cmd = base_speed - final_steer
+
+    # --- E. Output to Motors ---
+    left_motor.setVelocity(clamp(left_cmd, HARDWARE_LIMIT))
+    right_motor.setVelocity(clamp(right_cmd, HARDWARE_LIMIT))
