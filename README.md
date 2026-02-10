@@ -1,6 +1,7 @@
 # RoboticsCrashCourse_week4_Simulation
-Here is the English version of your README draft. I have kept the structure professional and suitable for a GitHub repository.
-
+# TASK 1
+obstacle_avoidance_python.py is the first task to use to instead of default C controller.
+# TASK 2
 ## 🔦 Webots Light Chasing Experiment: Master & Dog Simulation
 This project is an autonomous robot collaboration experiment based on the Webots simulation environment.
 
@@ -76,5 +77,6 @@ ht (preventing X-ray tracking).
 [ ] Swarm Intelligence: Introduce multiple "Dogs" tracking a single "Master" simultaneously, adding swarm avoidance and formation keeping algorithms.
 
 [ ] Air-Ground Co-op: Add a Mavic 2 Pro UAV model as an aerial tracker to implement light tracking in 3D dimensions.
+
 
 
