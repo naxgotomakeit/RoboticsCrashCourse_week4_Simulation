@@ -57,7 +57,7 @@ Close-Range Avoidance: When close to a wall, distance sensor readings spike. The
 
 Deadlock Detection: If the robot gets stuck in a corner or a collision occurs (Front_Dist > Threshold), a forced reverse timer is triggered, executing a "Reverse & Turn" maneuver to escape.
 
-🛠️ Simulation Setup
+## 🛠️ Simulation Setup
 To ensure the light sensors function correctly, this project relies on a Dark Environment setting:
 
 WorldInfo: It is recommended to adjust basicTimeStep to match the controller's refresh rate.
