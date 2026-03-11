@@ -73,7 +73,7 @@ Master Robot: A PointLight node must be added to the turretSlot with castShadows
 ht (preventing X-ray tracking).
 
 
-##📝 Future Plans (To-Do)
+## 📝 Future Plans (To-Do)
 [ ] Swarm Intelligence: Introduce multiple "Dogs" tracking a single "Master" simultaneously, adding swarm avoidance and formation keeping algorithms.
 
 [ ] Air-Ground Co-op: Add a Mavic 2 Pro UAV model as an aerial tracker to implement light tracking in 3D dimensions.
