@@ -70,7 +70,8 @@ BackgroundLight: luminosity must be set to 0 or a very low value (e.g., 0).
 
 DirectionalLight: Recommended to remove or disable to eliminate ambient interference light.
 
-### Master Robot: A PointLight node must be added to the turretSlot with castShadows set to TRUE to ensure walls correctly block light (preventing X-ray tracking) <img width="348" height="96" alt="image" src="https://github.com/user-attachments/assets/02047a5f-56c6-4ba3-9302-d63ca8f61ae2" />.
+### Master Robot: 
+A PointLight node must be added to the turretSlot with castShadows set to TRUE to ensure walls correctly block light (preventing X-ray tracking) <img width="348" height="96" alt="image" src="https://github.com/user-attachments/assets/02047a5f-56c6-4ba3-9302-d63ca8f61ae2" />.
 
 
 ## 📝 Future Plans (To-Do)
