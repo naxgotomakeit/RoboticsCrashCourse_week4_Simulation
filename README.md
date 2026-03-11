@@ -42,7 +42,7 @@ Weighted Sensor Fusion: Vector synthesis of "Light Attraction Force" and "Obstac
 
 State Machine: Includes four states: Search, Chase, Avoid, and Unstuck.
 
-## 🧠 Algorithm Principle
+## 🧠 Algorithm Principle (optional)
 The tracker's core steering logic is based on the following formula:
 
 Python
@@ -64,11 +64,11 @@ WorldInfo: It is recommended to adjust basicTimeStep to match the controller's r
 
 ### Lighting:
 
-BackgroundLight: luminosity must be set to 0 or a very low value (e.g., 0).
+1. BackgroundLight: luminosity must be set to 0 or a very low value (e.g., 0).
 
 <img width="367" height="386" alt="image" src="https://github.com/user-attachments/assets/2f466ef1-ca7f-4891-a9f2-5f977aee3050" />
 
-DirectionalLight: Recommended to remove or disable to eliminate ambient interference light.
+2. DirectionalLight: Recommended to remove or disable to eliminate ambient interference light.
 
 ### Master Robot: 
 A PointLight node must be added to the turretSlot with castShadows set to TRUE to ensure walls correctly block light (preventing X-ray tracking) <img width="348" height="96" alt="image" src="https://github.com/user-attachments/assets/02047a5f-56c6-4ba3-9302-d63ca8f61ae2" />.
