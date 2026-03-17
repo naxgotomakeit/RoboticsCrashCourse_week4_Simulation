@@ -74,10 +74,3 @@ WorldInfo: It is recommended to adjust basicTimeStep to match the controller's r
 A PointLight node must be added to the turretSlot with castShadows set to TRUE to ensure walls correctly block light (preventing X-ray tracking) <img width="348" height="96" alt="image" src="https://github.com/user-attachments/assets/02047a5f-56c6-4ba3-9302-d63ca8f61ae2" />.
 
 
-## 📝 Future Plans (To-Do)
-[ ] Swarm Intelligence: Introduce multiple "Dogs" tracking a single "Master" simultaneously, adding swarm avoidance and formation keeping algorithms.
-
-[ ] Air-Ground Co-op: Add a Mavic 2 Pro UAV model as an aerial tracker to implement light tracking in 3D dimensions.
-
-
-
