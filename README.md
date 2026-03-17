@@ -72,5 +72,7 @@ WorldInfo: It is recommended to adjust basicTimeStep to match the controller's r
 
 ### Master Robot: 
 A PointLight node must be added to the turretSlot with castShadows set to TRUE to ensure walls correctly block light (preventing X-ray tracking) <img width="348" height="96" alt="image" src="https://github.com/user-attachments/assets/02047a5f-56c6-4ba3-9302-d63ca8f61ae2" />.
+### Master Robot: same way: light sensor
+<img width="353" height="60" alt="image" src="https://github.com/user-attachments/assets/a27fbd58-57d5-4dd9-be34-76f313f48b46" />
 
 
